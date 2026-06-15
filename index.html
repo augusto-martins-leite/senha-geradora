@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Senhas</title>
+    <style>
+        /* ESTILOS GERAIS */ * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; } body { background-color: #1a1a12; /* fundo escuro oliva para contraste com amarelos */ color: #fff8e1; /* texto principal em amarelo claro */ display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; } .container { width: 100%; max-width: 800px; text-align: center; } /* CABEÇALHO */ .header { margin-bottom: 40px; } .icon-lock { font-size: 30px; color: #ffd54f; margin-bottom: 15px; } /* ícone amarelo */ .header h1 { font-size: 24px; font-weight: normal; letter-spacing: 2px; margin-bottom: 10px; } .header p { color: #f3e8c0; font-size: 14px; } /* CAMPO DA SENHA */ .display-box { background-color: #2a2a18; /* caixa levemente mais clara que o fundo */ border-bottom: 3px solid #b38600; /* borda amarela-escura */ padding: 20px; text-align: left; margin-bottom: 20px; font-size: 18px; } .display-box span { color: #f3e8c0; margin-right: 10px; } .password-output { color: #fff8e1; font-weight: bold; letter-spacing: 1px; word-break: break-all; } /* CAIXA DE CONFIGURAÇÕES */ .config-box { border: 1px solid #3b3b22; /* contorno escuro */ padding: 30px; text-align: left; } .config-box h2 { font-size: 20px; font-weight: normal; margin-bottom: 30px; letter-spacing: 1px; } /* GRID */ .grid-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; } .column h3 { font-size: 14px; font-weight: normal; color: #fff8e1; margin-bottom: 15px; } /* CONTADOR DE CARACTERES */ .counter-container { display: flex; align-items: center; border: 1px solid #b38600; width: fit-content; } .counter-btn { background: none; border: none; color: #fff8e1; font-size: 20px; padding: 10px 15px; cursor: pointer; user-select: none; } .counter-btn:hover { background-color: rgba(189, 157, 49, 0.08); } .counter-value { border-left: 1px solid #b38600; border-right: 1px solid #b38600; padding: 10px 20px; font-size: 16px; min-width: 60px; text-align: center; } /* CHECKBOXES */ .checkbox-group { display: flex; flex-direction: column; gap: 8px; } .checkbox-label { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; color: #fff8e1; } .checkbox-label input { accent-color: #ffd54f; width: 16px; height: 16px; } /* BARRA DE FORÇA DA SENHA */ .strength-meter { width: 100%; height: 15px; background-color: #14140a; /* trilho escuro */ position: relative; margin-bottom: 15px; } .strength-bar { height: 100%; width: 0%; transition: width 0.3s ease, background-color 0.3s ease; border-radius: 3px; } .strength-labels { display: flex; justify-content: space-between; font-size: 11px; color: #f3e8c0; margin-bottom: 25px; } .time-info { font-size: 12px; color: #f3e8c0; line-height: 1.4; } /* cores da barra por estado (aplique via JS com as mesmas hex usadas no script) */ /* Fraca: #ff8a65 (alaranjado-avermelhado) Média: #ffd54f (amarelo) Alta: #c6ff00 (amarelo-limão) Forte: #a3e635 (verde-amarelo) */ @media (max-width: 768px) { .grid-options { grid-template-columns: 1fr; gap: 30px; } }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Cabeçalho Principal -->
+        <div class="header">
+            <div class="icon-lock">🔒</div>
+            <h1>Gerador de senhas</h1>
+            <p>Gere instantaneamente uma senha aleatória e segura</p>
+        </div>
+
+        <!-- Tela de Exibição da Senha -->
+        <div class="display-box">
+            <span>Senha</span>
+            <span class="password-output" id="passwordDisplay">-</span>
+        </div>
+
+        <!-- Painel de Customização -->
+        <div class="config-box">
+            <h2>Personalize sua senha</h2>
+
+            <div class="grid-options">
+                <!-- Coluna 1: Quantidade de Caracteres -->
+                <div class="column">
+                    <h3>Número de caracteres</h3>
+                    <div class="counter-container">
+                        <button class="counter-btn" id="btnMinus">-</button>
+                        <div class="counter-value" id="charLength">12</div>
+                        <button class="counter-btn" id="btnPlus">+</button>
+                    </div>
+                </div>
+
+                <!-- Coluna 2: Filtros de Caracteres -->
+                <div class="column">
+                    <h3>Características da senha</h3>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkUppercase" checked> Letras maiúsculas
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkLowercase"> Letras minúsculas
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkNumbers"> Números
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chkSymbols"> Símbolos
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Coluna 3: Análise de Segurança -->
+                <div class="column">
+                    <h3>Força da senha</h3>
+                    <div class="strength-meter">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="strength-labels">
+                        <span>Fraca</span>
+                        <span>Média</span>
+                        <span>Forte</span>
+                    </div>
+                    <div class="time-info" id="timeInfo">
+                        Um computador pode levar até 0 dias para descobrir essa senha.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Seleção dos elementos do DOM (verifica existência)
+        const charLengthEl = document.getElementById('charLength');
+        const btnMinus = document.getElementById('btnMinus');
+        const btnPlus = document.getElementById('btnPlus');
+        const chkUppercase = document.getElementById('chkUppercase');
+        const chkLowercase = document.getElementById('chkLowercase');
+        const chkNumbers = document.getElementById('chkNumbers');
+        const chkSymbols = document.getElementById('chkSymbols');
+        const passwordDisplay = document.getElementById('passwordDisplay');
+        const strengthBar = document.getElementById('strengthBar');
+        const timeInfo = document.getElementById('timeInfo');
+    
+        // Se algum elemento não existir, aborta silenciosamente
+        if (!charLengthEl || !btnMinus || !btnPlus || !chkUppercase || !chkLowercase || !chkNumbers || !chkSymbols || !passwordDisplay || !strengthBar || !timeInfo) {
+            console.warn('Elementos necessários não encontrados no DOM. Script abortado.');
+            throw new Error('DOM elements missing');
+        }
+    
+        // Grupos de caracteres válidos
+        const charSets = {
+            uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            lowercase: 'abcdefghijklmnopqrstuvwxyz',
+            numbers: '0123456789',
+            symbols: '!@#$%^&*()_+-=[]{}|;:,.<>/?'
+        };
+    
+        let currentLength = 12;
+    
+        // Helpers
+        const randInt = max => Math.floor(Math.random() * max);
+    
+        function secondsToReadable(sec) {
+            if (!isFinite(sec) || sec > 1e25) return 'Praticamente impossível';
+            const units = [
+                { label: 'anos', value: 60 * 60 * 24 * 365 },
+                { label: 'dias', value: 60 * 60 * 24 },
+                { label: 'horas', value: 60 * 60 },
+                { label: 'minutos', value: 60 },
+                { label: 'segundos', value: 1 }
+            ];
+            for (const u of units) {
+                if (sec >= u.value) {
+                    const v = Math.floor(sec / u.value);
+                    return `${v} ${u.label}`;
+                }
+            }
+            return `${Math.floor(sec)} segundos`;
+        }
+    
+        // Controladores do comprimento da senha (+ e -)
+        btnMinus.addEventListener('click', () => {
+            if (currentLength > 4) {
+                currentLength--;
+                updateInterface();
+            }
+        });
+    
+        btnPlus.addEventListener('click', () => {
+            if (currentLength < 64) {
+                currentLength++;
+                updateInterface();
+            }
+        });
+    
+        // Ouvintes de mudanças nos checkboxes
+        [chkUppercase, chkLowercase, chkNumbers, chkSymbols].forEach(checkbox => {
+            checkbox.addEventListener('change', updateInterface);
+        });
+    
+        // Função principal
+        function updateInterface() {
+            charLengthEl.textContent = currentLength;
+    
+            // monta pool
+            let pool = '';
+            if (chkUppercase.checked) pool += charSets.uppercase;
+            if (chkLowercase.checked) pool += charSets.lowercase;
+            if (chkNumbers.checked) pool += charSets.numbers;
+            if (chkSymbols.checked) pool += charSets.symbols;
+    
+            if (pool === '') {
+                passwordDisplay.textContent = 'SELECIONE UMA OPÇÃO';
+                strengthBar.style.width = '0%';
+                strengthBar.style.backgroundColor = '#e74c3c';
+                timeInfo.textContent = 'Escolha pelo menos uma característica.';
+                return;
+            }
+    
+            // Gera senha aleatória a partir do pool
+            let generatedPassword = '';
+            for (let i = 0; i < currentLength; i++) {
+                generatedPassword += pool[randInt(pool.length)];
+            }
+    
+            // Garante pelo menos um caractere de cada conjunto selecionado
+            const requiredSets = [];
+            if (chkUppercase.checked) requiredSets.push(charSets.uppercase);
+            if (chkLowercase.checked) requiredSets.push(charSets.lowercase);
+            if (chkNumbers.checked) requiredSets.push(charSets.numbers);
+            if (chkSymbols.checked) requiredSets.push(charSets.symbols);
+    
+            if (requiredSets.length > 0) {
+                const pwdArray = generatedPassword.split('');
+                // escolhe posições distintas (limitadas pelo tamanho da senha)
+                const positions = new Set();
+                while (positions.size < Math.min(requiredSets.length, currentLength)) {
+                    positions.add(randInt(currentLength));
+                }
+                const posArray = Array.from(positions);
+                requiredSets.forEach((set, idx) => {
+                    const char = set[randInt(set.length)];
+                    pwdArray[posArray[idx]] = char;
+                });
+                generatedPassword = pwdArray.join('');
+            }
+    
+            passwordDisplay.textContent = generatedPassword;
+    
+            // Estimativa de entropia simples (bits)
+            const poolSize = pool.length;
+            const entropyPerChar = Math.log2(poolSize);
+            const entropy = Math.max(0, Math.round(entropyPerChar * currentLength));
+    
+            // Estima tempo para quebra assumindo 1e9 tentativas/s
+            const guessesPerSecond = 1e9;
+            let secondsToCrack;
+            if (entropy > 1024) {
+                secondsToCrack = Infinity;
+            } else {
+                secondsToCrack = Math.pow(2, entropy) / guessesPerSecond;
+            }
+    
+            timeInfo.textContent = `Entropia: ${entropy} bits — Tempo estimado para quebra: ${secondsToReadable(secondsToCrack)}`;
+    
+            // Atualiza barra de força (0..100%)
+            const strengthPercent = Math.max(0, Math.min(100, Math.round((entropy / 128) * 100)));
+            strengthBar.style.width = strengthPercent + '%';
+            if (strengthPercent < 25) {
+                strengthBar.style.backgroundColor = '#e74c3c';
+            } else if (strengthPercent < 50) {
+                strengthBar.style.backgroundColor = '#e67e22';
+            } else if (strengthPercent < 75) {
+                strengthBar.style.backgroundColor = '#f1c40f';
+            } else {
+                strengthBar.style.backgroundColor = '#2ecc71';
+            }
+        }
+    
+        // Geração inicial
+        updateInterface();
+    
+        // Clique para copiar a senha (com fallback)
+        passwordDisplay.addEventListener('click', () => {
+            const text = passwordDisplay.textContent;
+            if (!text || text === 'SELECIONE UMA OPÇÃO') return;
+    
+            const showCopied = () => {
+                const original = passwordDisplay.textContent;
+                passwordDisplay.textContent = 'COPIADO!';
+                setTimeout(() => passwordDisplay.textContent = original, 1200);
+            };
+    
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text, showCopied));
+            } else {
+                fallbackCopy(text, showCopied);
+            }
+    
+            function fallbackCopy(textToCopy, onSuccess) {
+                // cria textarea temporária
+                const ta = document.createElement('textarea');
+                ta.value = textToCopy;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'absolute';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    const ok = document.execCommand('copy');
+                    if (ok) onSuccess();
+                } catch (e) {
+                    // nada
+                }
+                document.body.removeChild(ta);
+            }
+        });
+    </script>
+    
+
+ </html>
